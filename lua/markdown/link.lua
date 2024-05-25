@@ -45,8 +45,8 @@ end
 
 ---@param node TSNode
 ---@return boolean
-local function is_link(node)
-	return node:type() == "inline_link"
+local function is_link_or_image(node)
+	return node:type() == "inline_link" or node:type() == "image"
 end
 
 ---@param node TSNode
@@ -192,12 +192,18 @@ end
 ---@param sys string
 ---@return boolean
 local function try_open(dest, sys)
+	local function on_exit(object)
+		if object.stderr ~= "" then
+			notify.error("%s", object.stderr)
+		end
+	end
+
 	if sys == "Windows_NT" then
-		vim.fn.system({ "explorer.exe", dest })
+		vim.system({ "explorer.exe", dest }, {}, on_exit)
 	elseif sys == "Linux" then
-		vim.fn.system({ "xdg-open", dest })
+		vim.system({ "xdg-open", dest }, {}, on_exit)
 	elseif sys == "Darwin" then
-		vim.fn.system({ "open", dest })
+		vim.system({ "open", dest }, {}, on_exit)
 	else
 		return false
 	end
@@ -268,7 +274,7 @@ function M.follow(opts)
 	cursor[1] = cursor[1] - 1
 
 	local t = ts.get_parser(0, "markdown"):parse()[1]
-	local link = md_ts.find_node(is_link, { ignore_injections = false })
+	local link = md_ts.find_node(is_link_or_image, { ignore_injections = false })
 	if link == nil then
 		return
 	end
