@@ -197,4 +197,13 @@ function M.get_motion_range(motion)
 	return { s[1], s[2], e[1], e[2] }
 end
 
+---@param name string
+function M.find_buffer_by_name(name)
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		if vim.api.nvim_buf_get_name(buf) == name then
+			return buf
+		end
+	end
+	return nil
+end
 return M

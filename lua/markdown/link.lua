@@ -232,10 +232,11 @@ local function open_path(path, opts)
 	local normalized = vim.fs.normalize(path)
 	local is_file = vim.fn.filereadable(normalized) ~= 0
 	local is_dir = vim.fn.isdirectory(normalized) ~= 0
+	local is_md = string.sub(path, -3) == ".md"
+
 	if is_file or is_dir then
 		local should_edit = true
 
-		local is_md = string.sub(path, -3) == ".md"
 		if opts.use_default_app and not is_md and not is_dir then
 			local sys = get_sys()
 			local sys_path
@@ -255,6 +256,21 @@ local function open_path(path, opts)
 				if p ~= nil then
 					follow_heading_link(inner_dest, p:parse()[1]:root())
 				end
+			end
+		end
+	elseif config:get().link.create_non_existing then
+		local buf = util.find_buffer_by_name(normalized)
+		if buf then
+			vim.api.nvim_set_current_buf(buf)
+		else
+			buf = vim.api.nvim_create_buf(true, false)
+			vim.api.nvim_buf_set_name(buf, normalized)
+			vim.api.nvim_set_current_buf(buf)
+			if is_md and config:get().link.auto_create_title then
+				local filename = normalized:match("^.+/(.+)$")
+				local heading = "# " .. filename:sub(1, -4)
+				vim.cmd("set filetype=markdown")
+				vim.api.nvim_buf_set_lines(buf, 0, 0, false, { heading })
 			end
 		end
 	else

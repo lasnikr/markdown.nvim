@@ -22,6 +22,8 @@
 
 ---@class LinkOpts
 ---@field paste { enable: boolean }
+---@field create_non_existing boolean
+---@field auto_create_title boolean
 
 ---@class TocOpts
 ---@field omit_heading string
@@ -85,6 +87,8 @@ local default_cfg = {
 		paste = {
 			enable = true,
 		},
+		create_non_existing = false,
+		auto_create_title = false,
 	},
 	toc = {
 		omit_heading = "toc omit heading",
